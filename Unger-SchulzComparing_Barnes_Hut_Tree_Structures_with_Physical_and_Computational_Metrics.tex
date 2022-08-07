@@ -1,0 +1,175 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{algorithm} 
+\usepackage{algpseudocode} 
+\usepackage{parskip} 
+ 
+
+
+
+\title{Comparing Barnes Hut Tree Structures with Physical and Computational Metrics}
+\author{Noah Unger-Schulz}
+\date{} %don't display the current date
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+ The challenges of simulating accurate and efficient n body simulations are important for astronomy, astrophysics and generally understanding the universe around us. In this study we tested the affects of multiple parameters used in n body simulations to find which ones had consistent physical accuracy and were fast enoug to run large scale simulations. We tested 3 force selection methods (Direct summation, Binary Tree, and Octree) and 2 integration methods (Runge Kutta of order 4 and LeapFrog Method ) to find which solutions were both accurate and fast. Accuracy was measured using the the 3 conserved quantities in a gravitational system: Energy momentum and angular momentum defining inaccuracy as large variations in the magnitude of measurements. We found that Octree was both nlog(n) efficiency and had higher accuracy than Binary Tree the other most efficient method. We also found surprisingly no difference in accuracy between the Leapfrog and Runge Kutta methods but a slight increase in speed with the Leapfrog method making it the better option for large scale tests.
+  
+  
+  
+  
+\end{abstract}
+
+\section{Introduction}
+
+The challenge of predicting the paths of stars has been around even before Newton’s universal law of gravitation. The problem is that there is no way to use differential equations to predict even a random system of 3 gravitational bodies  [citation]. Computers can’t find the exact solution but can easily calculate an approximation of any number of planets that is needed. The basic method to simulate these systems is called the direct summation with Euler's method integrator. This is very inefficient but the easiest method to implement. It comes in two parts. The direct summation method is just a double for loop:
+
+\begin{algorithm}
+    \caption{Direct Summation} 
+	\begin{algorithmic}[1]
+		\For {each Particle p}
+			\For {each Particle q}
+				\State Attract p to q
+			\EndFor
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+The other part of this basic method is Euler's method of integration where each particle increases its acceleration and velocity by approximating the each function as a linear function over time in the range of the time step.
+\begin{algorithm}
+    \caption{Euler's Method} 
+	\begin{algorithmic}[1]
+	    \Function{Move}{Particle with Velocity, Acceleration and Position}
+		    \State Velocity+= Acceleration*dt
+		    \State Position+= Velocity*dt
+        \EndFunction
+	\end{algorithmic} 
+\end{algorithm}
+\vspace{5mm} %5mm vertical space
+
+These combined algorithms with a small enough value of dt and given enough processing time can accurately predict the position of the particles in any n body simulation but there are far more efficient methods. In this paper we test some of these more efficient methods to try find more accurate and efficient methods to simulate n body systems. In these systems  every N bodies are attracted to N bodies meaning that to find the exact solutions $N^2$ operations are required.
+\section{Barnes-Hut Force Methods}
+
+
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.5]{BarnesHut.png}
+\end{center}
+\caption{
+}
+\label{setup}
+\end{figure}
+One important part about gravity simulations is that as the distance between particles increases the force between them quickly approaches zero meaning that the farther away two particles are the less impact they have on each others motion. This fact is taken advantage of in Barnes-Hut simulations to decrease the operations required while having comparable accuracy.
+
+Binary trees are one Barnes-Hut method that we tested.
+
+
+\begin{algorithm}
+    \caption{Binary Tree} 
+	\begin{algorithmic}[1]
+	\State Box=BoundingBox(Particles) (Step 1)
+	\Function{Split}{Box}
+	\State Split the box into two smaller boxes each with the same number of particles (Step 2)
+	\State Split(Children) (Step 3)
+	\State Find the center of mass of the particles in the box 
+	\EndFunction
+	\State Split(Box)
+	\For {each Particle p}
+			\For {each Box b}
+			\If {p is not in b}
+		        \State Attract p to b
+		    \EndIf
+			\EndFor
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+\vspace{40mm} %5mm vertical space
+
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale=0.45]{Octree.png}
+\end{center}
+\caption{
+}
+\label{setup}
+\end{figure}
+
+The octree implementation works similarly but there is a difference instead of splitting the boxes into two it splits them into eighths (hence octree) and instead of splitting the boxes by the number of particles it splits them spatially so each box is the exact same size. 
+Here is an example of the 2d equivalent (a quadtree).
+
+\begin{algorithm}
+    \caption{Binary Tree} 
+	\begin{algorithmic}[1]
+	\For {each Particle p}
+			\For {each Box b that p is in}
+			Parent= the Parent of b
+			\For {each child of parent c}
+			\If {p is not in c}
+		        \State Attract p to c
+		    \EndIf
+			\EndFor
+			\EndFor
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+\vspace{50mm} %5mm vertical space
+
+
+Looking at the Run Time versus particles graphs reinforces the difference in efficiency. The graph shows that both the Binary tree and Octree methods are roughly linear but their efficiencies are in fact of order nlog(n) ( denoted $\mathcal{O}(n\log{}n)$ ) compared to the direct summation method which is clearly $\mathcal{O}($$)$. The order of a function is defined by the dominant function at extremes. This means as the amount of particles increases the Barnes-Hut simulations will always outcompete the direct summation method.
+
+
+Each robot was evaluated twice, so the maximum possible fitness (the sum of the fitness for each evaluation) was 48. Using this setup, we ran three similar experiments over three runs each. All runs were done with a population of 40 for each robot over 15 generations, which we found to be sufficient for obtaining useful results. Our first test used the base code and the default evolution parameters. The second test altered the fitness function to punish a robot with -6 fitness if it ever lost the flag. Our final test used the initial fitness function, but increased the probability of adding connections and nodes from 5\% to 10\% and 3\% to 6\% respectively.
+
+\section{Results}
+
+\begin{figure}[h]
+\begin{center}
+\fbox{\includegraphics[scale=0.3]{Screenshot_-_030614_-_11_10_17.png}}
+\fbox{\includegraphics[scale=0.315]{Screenshot_-_030614_-_11_10_46.png}}
+\end{center}
+\caption{Both graphs show the average and best fitness progression for trial 2 of the first experiment. The average fitness (in blue) is shown for the red robot on the left and the blue robot on the right, and there is a clear upward trend in performance for both. We discovered that the sharp fall in the blue robot's fitness at generation 13 was likely caused by a mostly defensive blue population facing off against a red phenotype that likewise played defensively. When we evaluated that generation specifically, we found that both robots were reluctant to grab the flag, which explains the decline in fitness. This was remedied in the subsequent generation, as a more offensive blue population had evolved.}
+\label{experiment1fitness}
+\end{figure}
+
+\begin{figure}[h]
+\begin{center}
+\fbox{\includegraphics[scale=0.295]{40.png}}
+\fbox{\includegraphics[scale=0.32]{34.png}}
+\fbox{\includegraphics[scale=0.26]{cooler_network.png}}
+\end{center}
+\caption{Like Figure 2, the graphs show the average and best fitness progression for the red (top-left) and blue (top-right) robts. These graphs came from trial 3 of the second experiment. As expected, there is still a net increase in fitness for each robot. Interestingly, the blue robot developed a unique strategy that we did not expect or find in other trials. Beginning in Generation 9, the blue robot would circle to the left of the red robot instead of heading straight for the flag. When the red robot grabbed the flag and began to rotate back to its base, the blue robot was already in a position to intercept. This is where the robot's strategy began to disintegrate, although this may have been remedied with more generations. The most-fit blue topology from Generation 12 is shown below the graphs. Note the addition of a hidden node (17) that was not present at the beginning.}
+\label{experiment1fitness}
+\end{figure}
+
+Our results for all three experiments showed general increases in fitness for both the red and blue robots as evolution progressed. Specific evolutionary developments are shown in Figures 2 and 3 for Experiments 1 and 2. Unfortunately, none of the trials in Experiment 3 had particularly interesting results, and the average fitness increase was was lowest of all the experiments. This might have been different if we ran our trials for more generations, as the additional nodes and connections might have had a more positive impact. This is quite plausible, since complexifying coevolution in NEAT has already been shown to be effective.
+
+\section{Discussion}
+
+Our results add further evidence supporting the effectiveness of using competitive coevolution to create solutions to problems in AI. We consistently saw the fitness improve thoughout each trial.  For example, early successful phenotypes tended to compete in a mad dash to the flag in the center.  Later on, we saw both robots become more patient and hesitate before going for the flag.  Another strategy was to wait for the opponent to obtain the flag before "capturing the flag" and resetting their position. Further testing with longer trial runs may yield more interesting and unforseen strategies and the development of complex strategies falls in line with the current research \cite{NEAT}.  Initially the robots develop simple strategies corresponding to few nodes and connections. Building off of these networks creates foundations for more creatively complex strategies. 
+
+Overall, we believe that our experiments were successful in developing adaptive strategies without the need to hard-code functions to determine motor output. If we are able to run more generations and develop better topologies, we may see the rise of robots that can reasonably compete against a human-controlled opponent. We could then evaluate and evolve the robots based on interactions with humans, and reveal insights into human tendencies for strategies in the game. We believe that competitive coevolution should be applied to other challenged in AI development outside of the Pyrobot simulation.
+
+\section{Acknowledgements}
+
+Our experiment was more complicated than initially intended, and we could not have done it by ourselves. We would like to thank Lisa Meeden for providing the base code to perform competitive coevolution in NEAT on a Pyrobot simulation, as well as guidance on the project. Additionally, we would  like to thank Joe Boninger for showing us a trigonometric algorithm to help the robots make better turning decisions. Finally, thanks to Ben Xie and Tyler Zon for helping us create separate files that ran our tests outside of the simulation window, which allowed us to perform more trials in a shorter amount of time.
+
+\begin{thebibliography}{1}
+
+  \bibitem{red_queen} Dario Floreano and Stefano Nolfi, God save the red queen! competition in co-evolutionary robotics. {\em Evolutionary Computation}, 5, 1997.
+
+  \bibitem{pursuit}  Geoffrey F. Miller and Dave Cliff, Co-evolution and pursuit and evasion i: Biological and game-theoretic foundations. 1994.
+
+  \bibitem{NEAT} Kenneth O. Stanley and Risto Miikkulainen, Competitve coevolution through evolutionary complexification {\em HJournal of Artifical Intlelignce Research}, 21, 2004.
+  
+  \bibitem{NEAT_website} Kenneth O. Stanley. The NeuroEvolution of Augmenting Topologies (NEAT) Users Page. {\em NEAT Software FAQ}, 2013. \url{http://www.cs.ucf.edu/~kstanley/neat.html}
+
+
+  \end{thebibliography}
+
+\end{document}
