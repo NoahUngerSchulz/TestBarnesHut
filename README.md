@@ -10,9 +10,10 @@ cp /tmp/gladstuff/src/glad.c ./
 mkdir glad
 cp /tmp/gladstuff/include/glad/glad.h ./glad/
 
-then install glm with:
+then install glm and stb with:
 
 sudo apt install libglm-dev
+sudo apt install libstb-dev
 
 to run the code and see the output type
 
