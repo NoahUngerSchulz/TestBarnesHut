@@ -235,11 +235,13 @@ int main() {
 
 
 
-	
+    
         // NSim
 	
 	steps+=1;
+
 	if (steps>cycles){
+	  
 	  std::cout<<steps<<"steps"<<std::endl;
 	  NSim_accuracy(ps_branch,ps_direct, "B",Bsim);
 	  NSim_accuracy(ps_tree,ps_direct, "T",Tsim);
@@ -284,7 +286,7 @@ int main() {
 	    dt+=.05;
 	  }
 	}
- 
+
 
 	//*/
 	/*
@@ -326,9 +328,11 @@ int main() {
 	std::valarray<double>scale={Edges[3]-Edges[0],Edges[4]-Edges[1],Edges[5]-Edges[2]};
 	std::valarray<double>center={Edges[0],Edges[1],Edges[2]};
 	branch* B = new branch(ptrs, left, right,0,"B",nullptr,center,CORNER,scale);
+
 	B->INIT();
 	B->build(ptrs,b);
         NSim_Step(ps_branch, B,dt,0);
+
 	after = static_cast<float>(glfwGetTime());
 	//std::cout<<"         BRANCHTIME "<<after-before<<std::endl;
 	Bsim.time+=after-before;
@@ -370,6 +374,7 @@ int main() {
         T->computeMassMoments(left, right);
         orderParticles(ps_tree, ptrs);
         NSim_Step(ps_tree, T, dt,1);
+
 	after = static_cast<float>(glfwGetTime());
 	//std::cout<<"         TREETIME "<<after-before<<std::endl;
 	Tsim.time+=after-before;
@@ -394,13 +399,14 @@ int main() {
 	delete TR;
 	ptrs.erase(ptrs.begin(), ptrs.end());
 	//*/
-	
 
 	
+    
 	for (std::vector<class Particle>::iterator p = ps_direct.begin(); p != ps_direct.end(); p++) ptrs.push_back(&*p);
 	before = static_cast<float>(glfwGetTime());
-        Tree* D = new Tree(ptrs, left, right,0,0,"D");
-        NSim_Step(ps_direct, D,dt,1/10.0);
+        OCTree* D = new OCTree(ptrs, left, right,0,0,"D");
+        NSim_Step(ps_direct, D,dt,1);
+	std::cout<<"working"<<std::endl;	 				
 	delete D;
 	after = static_cast<float>(glfwGetTime());
 	//std::cout<<"         TIME "<<after-before<<std::endl;
@@ -408,10 +414,11 @@ int main() {
 	//NSim_accuracy(ps_direct,ps_direct, D,Dsim);
 	ptrs.erase(ptrs.begin(), ptrs.end());
 	//*/
-	
+	/*
+      	
 	for (std::vector<class Particle>::iterator p = psR_direct.begin(); p != psR_direct.end(); p++) ptrs.push_back(&*p);
 	before = static_cast<float>(glfwGetTime());
-        Tree* DR = new Tree(ptrs, left, right,0,0,"DR");
+        OCTree* DR = new OCTree(ptrs, left, right,0,0,"DR");
         NSim_Step(psR_direct, DR,dt,1/10.0);
 	delete DR;
 	after = static_cast<float>(glfwGetTime());
@@ -422,7 +429,7 @@ int main() {
 	//*/
 	
     
-	
+
 	
         
 	
